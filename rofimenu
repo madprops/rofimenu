@@ -1,0 +1,55 @@
+#!/usr/bin/env python
+
+import os
+import sys
+from subprocess import Popen, PIPE
+
+labels = []
+cmds = []
+
+def show():
+  conf = '-me-select-entry "" -me-accept-entry "MousePrimary" -font "sans-serif 16" -theme-str "window { width: 600px; height: 350px;}"'
+  cmd = f'rofi -dmenu -markup-rows -i -p "Select Item" -format i {conf} -selected-row 0'
+  proc = Popen(cmd, stdout=PIPE, stdin=PIPE, shell=True, text=True)
+
+  try:
+    ans = int(proc.communicate("\n".join(labels))[0].strip())
+  except:
+    return
+
+  if ans >= 0:
+    os.system(cmds[ans])
+
+def main() -> None:
+  global labels
+  global cmds
+
+  if not sys.stdin.isatty():
+    args = sys.stdin.read().strip()
+  else:
+    print("echo or cat results into this script.")
+    return
+
+  if len(args) == 0:
+    print("No items provided.")
+    return
+
+  args = args.split("\n")
+  args = list(map(lambda x: x.strip(), args))
+
+  for a in args:
+    items = a.split("=")
+
+    if (len(items) != 2):
+      print("Wrong item syntax.")
+      return
+
+    items = list(map(lambda x: x.strip(), items))
+    labels.append(items[0])
+    cmds.append(items[1])
+  
+  if (len(labels) > 0):
+    show()
+  
+if __name__ == "__main__":
+  main()  
